@@ -1,6 +1,10 @@
 ﻿Public Class Form1
 
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+
+        ' Limit the text box to 100 characters (same as VARCHAR(100))
+        txtInput.MaxLength = 100
+
         ' 1. Populate the ComboBox options
         cmbOptions.Items.Add("Manager")
         cmbOptions.Items.Add("Developer")
@@ -12,6 +16,42 @@
 
         ' 2. Load existing records from FormData.csv into the ListBox
         LoadCsvToListBox()
+    End Sub
+
+    ''' <summary>
+    ''' Checks that the text contains only letters and spaces, maximum 100 characters
+    ''' </summary>
+    Private Function IsValidText(value As String) As Boolean
+
+        ' Must be 100 characters or fewer
+        If value.Length > 100 Then
+            Return False
+        End If
+
+        ' Only letters and spaces are allowed (no numbers or special characters)
+        For Each character As Char In value
+            If Not Char.IsLetter(character) AndAlso character <> " "c Then
+                Return False
+            End If
+        Next
+
+        Return True
+    End Function
+
+    ''' <summary>
+    ''' Blocks numbers and special characters while typing.
+    ''' Only letters, spaces, and Backspace are allowed.
+    ''' </summary>
+    Private Sub txtInput_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtInput.KeyPress
+
+        If Not Char.IsLetter(e.KeyChar) AndAlso
+           Not Char.IsControl(e.KeyChar) AndAlso
+           e.KeyChar <> " "c Then
+
+            e.Handled = True
+
+        End If
+
     End Sub
 
     ''' <summary>
@@ -49,6 +89,14 @@
         ' 1. Validate input
         If String.IsNullOrWhiteSpace(txtInput.Text) Then
             MessageBox.Show("Please enter some text in the text box.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            txtInput.Focus()
+            Exit Sub
+        End If
+
+        ' Check letters and spaces only (no numbers or special characters), max 100
+        If Not IsValidText(txtInput.Text.Trim()) Then
+            MessageBox.Show("Text can only contain letters and spaces (maximum 100 characters).", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            txtInput.Focus()
             Exit Sub
         End If
 
